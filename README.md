@@ -1,254 +1,210 @@
-**TeamCity SSL Certificate Automation**
+Here’s a **refined and enhanced version of your `README.md`** based on the updated PowerShell script that uses approved verbs and includes detailed comments. This version improves clarity, structure, and alignment with PowerShell best practices.
+
+---
+
+### ✅ Updated `README.md`
+
+```markdown
+# TeamCity SSL Certificate Automation
 
 Automate SSL certificate deployment for TeamCity on Windows using PowerShell and GitHub Actions — from downloading certificates stored in Google Cloud Storage to configuring HTTPS securely and reliably.
 
-**Table of Contents**
+---
 
-1\.   	Introduction
+## 📋 Table of Contents
 
-2\.   	Why SSL for TeamCity?
+1. Introduction  
+2. Why SSL for TeamCity?  
+3. Overview of This Project  
+4. Prerequisites  
+5. Step-by-Step Setup Guide  
+   - Generate or Obtain SSL Certificate (.pfx)  
+   - Upload Certificate to Google Cloud Storage  
+   - Create GitHub Repository and Store Secrets  
+   - Configure TeamCity for SSL  
+   - Run PowerShell Script Locally  
+   - Automate with GitHub Actions  
+6. Understanding the PowerShell Script  
+7. GitHub Actions Workflow Explained  
+8. Security Best Practices  
+9. Troubleshooting  
+10. FAQs  
+11. Contributing  
+12. License  
 
-3\.   	Overview of This Project
+---
 
-4\.  	Prerequisites
-
-5\.   	Step-by-Step Setup Guide
-
-o   Generate or Obtain SSL Certificate (.pfx)
-
-o   Upload Certificate to Google Cloud Storage
-
-o   Create GitHub Repository and Store Secrets
-
-o   Configure TeamCity for SSL
-
-o   Run PowerShell Script Locally
-
-o   Automate with GitHub Actions
-
-6\.  	Understanding the PowerShell Script
-
-7\.   	GitHub Actions Workflow Explained
-
-8\.  	Security Best Practices
-
-9\.  	Troubleshooting
-
-10\.   	FAQs
-
-11\.	Contributing
-
-12\.	License
-
-**Introduction**
+## 🚀 Introduction
 
 TeamCity is a popular continuous integration and deployment server. Securing TeamCity with SSL (HTTPS) is essential to protect data in transit, especially credentials and build artifacts.
 
 This repository provides:
 
-·       A **PowerShell script** to download SSL certificates from Google Cloud Storage (GCS), import them into a Java keystore (.keystore), and restart TeamCity.
+- A **PowerShell script** that:
+  - Downloads SSL certificates from Google Cloud Storage (GCS)
+  - Imports them into a Java keystore using `keytool`
+  - Restarts the TeamCity service
+- A **GitHub Actions workflow** to automate this process securely using GitHub Secrets
+- Clear guidance for both beginners and advanced users
 
-·       A **GitHub Actions workflow** to automate this process securely using GitHub Secrets.
+---
 
-·       Clear guidance to help beginners and advanced users set up SSL for TeamCity efficiently.
+## 🔒 Why SSL for TeamCity?
 
-**Why SSL for TeamCity?**
+- **Encrypts communication** between users and the TeamCity server  
+- Prevents **man-in-the-middle attacks**  
+- Enables **secure login and data transfer**  
+- Required for compliance with many security standards  
 
-·       **Encrypts communication** between users and the TeamCity server.
+---
 
-·       Prevents **man-in-the-middle attacks**.
+## 📦 Overview of This Project
 
-·       Enables **secure login and data transfer**.
+- **Certificate Management:** Uses .pfx (PKCS#12) certificates stored securely in GCS  
+- **Keystore Handling:** Imports .pfx into a Java keystore using `keytool`  
+- **Service Management:** Stops and starts the TeamCity Windows service safely  
+- **Automation:** Supports manual execution and GitHub Actions-based deployment  
+- **Security:** Uses GitHub Secrets to handle sensitive data securely  
 
-·       Required for compliance with many security standards.
+---
 
-**Overview of This Project**
+## ✅ Prerequisites
 
-·       **Certificate Management:** Uses .pfx (PKCS\#12) certificates stored securely in Google Cloud Storage.
+Ensure you have:
 
-·       **Keystore Handling:** Imports .pfx into a Java keystore using keytool (standard Java tool).
+- A TeamCity server running on Windows  
+- Java JRE/JDK installed (for `keytool`)  
+- Access to a Google Cloud Storage bucket  
+- A GitHub account and basic repo knowledge  
+- Git and optionally GitHub CLI installed  
+- Google Cloud SDK (`gcloud`) installed  
 
-·       **Service Management:** Safely stops and starts the TeamCity Windows service during updates.
+---
 
-·       **Automation:** Supports manual execution or fully automated deployment via GitHub Actions.
+## 🛠️ Step-by-Step Setup Guide
 
-·       **Security:** Uses GitHub Secrets to handle sensitive passwords securely.
+### 1. Generate or Obtain SSL Certificate (.pfx)
 
-**Prerequisites**
+You need a `.pfx` certificate file (PKCS#12 format) containing your SSL certificate and private key.
 
-Before you start, ensure you have:
+**Option 1:** Purchase from a Certificate Authority (CA)  
+**Option 2:** Create a self-signed certificate for testing:
 
-·       A **TeamCity server** running on Windows.
+```powershell
+$cert = New-SelfSignedCertificate -DnsName "your.teamcity.domain" -CertStoreLocation Cert:\LocalMachine\My
+$pwd = ConvertTo-SecureString -String "YourPfxPassword" -Force -AsPlainText
+Export-PfxCertificate -Cert $cert -FilePath "C:\path\to\teamcity_cert.pfx" -Password $pwd
+```
 
-·       **Java JRE/JDK** installed on the TeamCity server (for keytool).
+### 2. Upload Certificate to Google Cloud Storage
 
-·       Access to a **Google Cloud Storage bucket** for certificate storage.
+```bash
+gsutil cp C:\path\to\teamcity_cert.pfx gs://your-gcs-bucket/teamcity_cert.pfx
+```
 
-·       A **GitHub account** and basic familiarity with repositories.
+### 3. Create GitHub Repository and Store Secrets
 
-·       Installed **Git** and optionally **GitHub CLI** on your local machine.
+- Go to **Settings > Secrets and variables > Actions**
+- Add:
+  - `KEYSTORE_PASSWORD`: Password for your .pfx and keystore
+  - `GCP_SA_KEY`: Google Cloud service account JSON key
 
-·       Installed **Google Cloud SDK (gcloud)** on the machine running the script or GitHub Actions runner.
+### 4. Configure TeamCity for SSL
 
-**Step-by-Step Setup Guide**
+Edit `C:\TeamCity\conf\server.xml`:
 
-**Generate or Obtain SSL Certificate (.pfx)**
+```xml
+<Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+           SSLEnabled="true"
+           scheme="https" secure="true"
+           keystoreFile="C:\TeamCity\conf\.keystore"
+           keystorePass="your-keystore-password"
+           sslProtocol="TLS" />
+```
 
-You need a .pfx certificate file (PKCS\#12 format) which contains your SSL certificate and private key.
+### 5. Run PowerShell Script Locally
 
-·       **Option 1: Purchase from a Certificate Authority (CA).**
+```powershell
+.\Install-TeamCitySSLCert.ps1 `
+  -GcsBucketName "your-gcs-bucket" `
+  -GcsCertObjectName "teamcity_cert.pfx" `
+  -TeamCityConfDir "C:\TeamCity\conf" `
+  -TeamCityCertDir "C:\TeamCity\Cert" `
+  -KeystorePassword "<your-keystore-password>"
+```
 
-·       **Option 2: Create a self-signed certificate for testing:**
+### 6. Automate with GitHub Actions
 
-Using PowerShell:
+Create `.github/workflows/deploy-teamcity-ssl.yml`:
 
-$cert \= New-SelfSignedCertificate \-DnsName "your.teamcity.domain" \-CertStoreLocation Cert:\\LocalMachine\\My  
- $pwd \= ConvertTo-SecureString \-String "YourPfxPassword" \-Force \-AsPlainText  
- Export-PfxCertificate \-Cert $cert \-FilePath "C:\\path\\to\\teamcity\_cert.pfx" \-Password $pwd
 
-Replace "your.teamcity.domain" and "YourPfxPassword" accordingly.
+## 🧠 Understanding the PowerShell Script
 
-**Upload Certificate to Google Cloud Storage**
+- **Get-KeytoolPath:** Locates `keytool.exe` using `JAVA_HOME`  
+- **Get-KeystoreConfiguration:** Parses `server.xml` to extract keystore info  
+- **Copy-GcsCertificate:** Downloads `.pfx` from GCS using `gcloud`  
+- **Test-DirectoryOrCreate:** Ensures required directories exist  
+- **Main Logic:** Imports certificate, manages TeamCity service, handles errors  
 
-1\.   	Install and initialize [Google Cloud SDK](https://cloud.google.com/sdk/docs/install).
+---
 
-2\.   	Upload your .pfx file:
+## 🔄 GitHub Actions Workflow Explained
 
-gsutil cp C:\\path\\to\\teamcity\_cert.pfx gs://your-gcs-bucket/teamcity\_cert.pfx
+- **Trigger:** Manual (`workflow_dispatch`)  
+- **Environment:** Windows runner with PowerShell  
+- **Authentication:** Uses service account key securely  
+- **Execution:** Runs PowerShell script with secrets injected  
 
-**Create GitHub Repository and Store Secrets**
+---
 
-1\.   	Create a new GitHub repository for your scripts.
+## 🔐 Security Best Practices
 
-2\.   	In the repo, go to **Settings \> Secrets and variables \> Actions**.
+- Never commit passwords or keys to your repo  
+- Use GitHub Secrets for sensitive data  
+- Limit service account permissions  
+- Always use HTTPS for communication  
 
-3\.   	Add the following secrets:
+---
 
-o   KEYSTORE\_PASSWORD: Password protecting your .pfx file and keystore.
+## 🧰 Troubleshooting
 
-o   GCP\_SA\_KEY: Your Google Cloud service account JSON key (for GCS access).
+- `keytool` not found → Ensure `JAVA_HOME` is set  
+- Permission errors → Run PowerShell as Administrator  
+- GCS access denied → Check service account and secrets  
+- TeamCity service fails → Check Windows service logs  
 
-**Configure TeamCity for SSL**
+---
 
-Edit C:\\TeamCity\\conf\\server.xml and configure the HTTPS connector:
-
-\<Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol"  
-        	SSLEnabled="true"  
-        	scheme="https" secure="true"  
-            keystoreFile="C:\\TeamCity\\conf\\.keystore"  
-            keystorePass="your-keystore-password"  
-        	sslProtocol="TLS" /\>
-
-**Run PowerShell Script Locally**
-
-Run the PowerShell script with parameters:
-
-.\\Install-TeamCitySSLCert.ps1 \`  
-   \-GcsBucketName "your-gcs-bucket" \`  
-   \-GcsCertObjectName "teamcity\_cert.pfx" \`  
-   \-TeamCityConfDir "C:\\TeamCity\\conf" \`  
-   \-TeamCityCertDir "C:\\TeamCity\\Cert" \`  
-   \-KeystorePassword "\<your-keystore-password\>"
-
-**Automate with GitHub Actions**
-
-Create .github/workflows/deploy-teamcity-ssl.yml with:
-
-name: Deploy TeamCity SSL
-
- on:  
-   workflow\_dispatch:
-
- jobs:  
-   deploy-ssl:  
- 	runs-on: windows-latest
-
- 	steps:  
- 	\- uses: actions/checkout@v4
-
- 	\- name: Setup Google Cloud SDK  
-   	uses: google-github-actions/setup-gcloud@v1  
-   	with:  
-     	project\_id: your-gcp-project-id  
-     	service\_account\_key: ${{ secrets.GCP\_SA\_KEY }}  
-     	export\_default\_credentials: true
-
- 	\- name: Run SSL Deployment Script  
-   	shell: pwsh  
-   	env:  
-     	KEYSTORE\_PASSWORD: ${{ secrets.KEYSTORE\_PASSWORD }}  
-  	 run: |  
-     	.\\Install-TeamCitySSLCert.ps1 \`  
-       	\-GcsBucketName "your-gcs-bucket" \`  
-       	\-GcsCertObjectName "teamcity\_cert.pfx" \`  
-       	\-TeamCityConfDir "C:\\TeamCity\\conf" \`  
-       	\-TeamCityCertDir "C:\\TeamCity\\Cert" \`  
-       	\-KeystorePassword $env:KEYSTORE\_PASSWORD
-
-**Understanding the PowerShell Script**
-
-·       **Download Certificate:** Uses gcloud CLI to fetch .pfx from GCS.
-
-·       **Keystore Import:** Uses keytool \-importkeystore to create or update Java keystore.
-
-·       **Service Control:** Stops TeamCity service before import and restarts it afterward.
-
-·       **Error Handling:** Throws detailed errors on failure for easy debugging.
-
-**GitHub Actions Workflow Explained**
-
-·       **Triggers:** Manual (workflow\_dispatch) to run on demand.
-
-·       **Environment:** Windows runner with PowerShell.
-
-·       **Google Cloud Setup:** Authenticates using service account key.
-
-·       **Script Execution:** Runs your PowerShell script with secrets injected securely.
-
-**Security Best Practices**
-
-·       Never commit passwords or keys directly to your repository.
-
-·       Use GitHub Secrets to manage sensitive data.
-
-·       Limit service account permissions to only required scopes.
-
-·       Use HTTPS and secure channels for all communications.
-
-**Troubleshooting**
-
-·       **keytool not found:** Ensure JAVA\_HOME is set on the runner or server.
-
-·       **Permission errors:** Run PowerShell as Administrator.
-
-·       **GCS access denied:** Verify service account permissions and secret correctness.
-
-·       **TeamCity service fails to restart:** Check Windows service logs.
-
-**FAQs**
+## ❓ FAQs
 
 **Q:** Can I use this for production?  
- **A:** Yes, but ensure certificates are from a trusted CA and secrets are handled securely.
+**A:** Yes, with trusted certificates and secure secrets.
 
-**Q:** What if my keystore password differs from .pfx password?  
- **A:** The script assumes they are the same for simplicity; customize if needed.
+**Q:** What if my keystore password differs from .pfx?  
+**A:** Script assumes they are the same; modify if needed.
 
 **Q:** How do I update the certificate?  
- **A:** Upload new .pfx to GCS and rerun the script or workflow.
+**A:** Upload new `.pfx` to GCS and rerun the script or workflow.
 
-**Contributing**
+---
 
-Contributions, issues, and feature requests are welcome\! Please open an issue or submit a pull request.
+## 🤝 Contributing
 
-**License**
+Contributions, issues, and feature requests are welcome!  
+Please open an issue or submit a pull request.
+
+---
+
+## 📄 License
 
 This project is licensed under the MIT License.
 
-**Contact**
+---
 
-For questions or support, please open an issue in this repository or contact the maintainer.
+## 📬 Contact
 
-**Happy Securing Your TeamCity Server\!** 🚀
+For questions or support, open an issue or contact the maintainer.
 
-If you want, I can also help you generate the exact PowerShell script and GitHub Actions workflow files\!
+---
 
+**Happy Securing Your TeamCity Server! 🚀**
