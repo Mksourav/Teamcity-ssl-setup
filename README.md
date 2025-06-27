@@ -1,5 +1,5 @@
 ```markdown
-# TeamCity SSL Certificate Automation
+# TeamCity SSL-Certificate Automation
 
 Automate SSL certificate deployment for TeamCity on Windows using PowerShell and GitHub Actions — from downloading certificates stored in Google Cloud Storage to configuring HTTPS securely and reliably.
 
