@@ -182,3 +182,18 @@ catch {
     Write-Error "`n❌ Error occurred: $_"
     exit 1
 }
+
+{
+  "type": "service_account",
+  "project_id": "glowing-arcadia-456211-e1",
+  "private_key_id": "9d87007e9fa8fb5fc72715e74f0f03c57490cdb9",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCMkwvAPy/hhFdt\nEp0X+BQ8QrTFeZ+B8KFWQzv9feLtEv9XJamFULh3IKXj2PKx2BJ9lP/QOhE6BxPw\nUz0ozC5soWSTTOzmuonMsJJP1zh1ccwhINDDJJsIV5/w3s7+sVJt2Rmh6YHvbe6W\n/rEnbfmO1fEUnXXCdQApnr1GpJSN/E4qtqLX0NuQ7XDn5SktJoYCtRU21hJtGaJY\nuXeapgPhjSKubEJmN7S8JydTZUakAa39M1Fe5niiJzaCxTpwFsP8kt/5RHHTXt+/\n751+P60QUzdJUEybUiU0OC2uOD3QRYbgN7AOKzeEjYMfXZBKtxdXZsBB8aKokfg6\nRLIAE5WTAgMBAAECggEANVHJEUBmTum9p3d58o98TWcX3hdFsymsaGXUKVBIdJfS\nFiII7LIzZawSgBvX4jEMwmlzpm1//zyUCYHpHsJjkXyeA2kYKmPyxJrsxC/kEFf7\nj009IeeOjll+JwS8CssDcvr3x/wj9scBynAMjeIe2Fi5upIHCp0KVL8LF/JxDnFm\nvvsgorsB4WtSlunRmjDedCKuBssJtJTnBtFrb07apBlI1Xd/2brnO8gdSUjGbDWE\n7OcFMX6sMpzbnL4nkRlXfAA+mqVkYbPyfs0sOvUoQfAIW9MvW4+Ar4sllxuaJb2F\nWoM0J3f9bP8aFjkT+RAjkIVWO0j5fZLxJvRWPT1I4QKBgQDGYzGr5yyZ5xm7GOG5\nm51ncVf28OPG/+UuctDlP1GGgHRwgghKOpPhFWi8F+2PANIjiaHQxbnf7xQgTdFf\nQZDOmpZ0b9nz+dRw7eVxhIwnBjpJYPrSNm1iCLlWpFuplPg+ADCo+pjfgWTeMSNT\ngN11Na3eqvp9ymR4nhM5qoHeqwKBgQC1ZdREWE9ZctIVO2lDFDK1WRoIPWiJbWzZ\n8D5bBpdOkrcjl+H9JGxZYWvLGM1iG81ibVlAP38MpbeCnOhxN8hWLL7eugEbV/t3\nlkqRZMVOj3sCV1s7qyljls65WwruD9h9DARSk/4OjaXCg8p0oB6V6THcNR4F7PD6\nH0HVFj0EuQKBgGI7jcXj8ybF0uzc1jB0yI0HB5qEDxVjclT8j0lkf/bMtltbV8WB\nmeXTFwhEBOJRcrwcE17v+SjUFjAkuC6lpZFX5HYFSHPRWgsNERaTnl5YbBYXijr6\nrlDjpvoq6iRfWkhBCdcyNu49APgwdqCLZ5z5Fn3yRZRx2iwLgdOFBUd/AoGBAJx5\n06qFFyXM80YXcszHXpqq2tbiygtKVkyFffSdceX4j3xnpyzrv382l3qh0YFhBEF0\nnDnczCbHyM4ltij7+pfDj36nqw7ATY6yGW7kI4OKJ400d+G320MqMvcXfw0upAvy\nUsQ9HznEnIl3kCwcd2XPvA/9zgFEi/bnAa3jug0ZAoGBAISmbbqIq8DlgFPBlpkF\nVO1vp37Wz+A1ZW+xUNr0cLAjM8Vg9Z8lRrgRcodqDiJTQiY6JV4vZsAldmo0MuBW\nu26NF8xedrDis4D9KOzv9HjSRymrzv0uo4mQFY7FnoHgFN7mRljfN70s5pvtMqb4\n30h3yHgrmoMmQc2CaokkpB+P\n-----END PRIVATE KEY-----\n",
+  "client_email": "730413285201-compute@developer.gserviceaccount.com",
+  "client_id": "113404061304495127133",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/730413285201-compute%40developer.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
+
