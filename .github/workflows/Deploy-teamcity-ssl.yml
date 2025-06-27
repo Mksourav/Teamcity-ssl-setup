@@ -1,57 +1,58 @@
-# This workflow automates the deployment of an SSL certificate to a TeamCity server.
-# It is triggered manually via the GitHub Actions UI.
+# This GitHub Actions workflow automates the deployment of an SSL certificate
+# to a Windows-based TeamCity server hosted on Google Cloud Compute Engine.
+# It uses a self-hosted runner installed on the TeamCity VM to execute a PowerShell script.
 
-name: Deploy TeamCity SSL
+name: Deploy TeamCity SSL  # Name of the workflow as it appears in the GitHub Actions UI
 
 on:
-  # 'workflow_dispatch' allows manual triggering of this workflow from the GitHub Actions tab.
+  # This workflow is manually triggered from the GitHub Actions UI
   workflow_dispatch:
 
 jobs:
   deploy-ssl:
-    # Specifies the operating system environment for the job.
-    # 'windows-latest' uses the latest available Windows runner.
-    runs-on: windows-latest
+    # This job runs on a self-hosted runner, which must be installed and configured
+    # on the TeamCity Windows VM (GCP Compute Engine instance).
+    runs-on: self-hosted
 
     steps:
-      # Step 1: Checkout the repository code.
-      # This makes the PowerShell script and other files available to the workflow.
-      - uses: actions/checkout@v4
+      # Step 1: Checkout the repository so the workflow has access to the PowerShell script
+      - name: Checkout Repository
+        uses: actions/checkout@v4  # Official GitHub Action to clone the repo contents
 
-      # Step 2: Set up the Google Cloud SDK.
-      # This is required to access Google Cloud Storage and download the SSL certificate.
+      # Step 2: Set up Google Cloud SDK on the runner
+      # This is required to authenticate and interact with Google Cloud Storage (GCS)
       - name: Setup Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
-          # Replace with your actual Google Cloud project ID.
+          # Replace with your actual Google Cloud project ID
           project_id: your-gcp-project-id
 
-          # This secret should contain the JSON key of a Google Cloud service account
-          # with permission to access the GCS bucket containing the certificate.
+          # This secret should contain the full JSON key of a Google Cloud service account
+          # that has permission to access the GCS bucket where the SSL certificate is stored
           service_account_key: ${{ secrets.GCP_SA_KEY }}
 
-          # This exports the credentials so that gcloud commands can use them by default.
+          # This makes the credentials available to gcloud CLI commands
           export_default_credentials: true
 
-      # Step 3: Run the PowerShell script to install the SSL certificate.
-      # This script performs the following:
+      # Step 3: Run the PowerShell script to install the SSL certificate
+      # The script performs the following:
       # - Downloads the .pfx certificate from GCS
-      # - Imports it into the TeamCity keystore using keytool
-      # - Stops and restarts the TeamCity service
+      # - Imports it into the Java keystore using keytool
+      # - Stops and restarts the TeamCity Windows service
       - name: Run SSL Deployment Script
-        shell: pwsh  # Specifies that the script should run in PowerShell
+        shell: pwsh  # Specifies that the script should be executed using PowerShell Core
 
         env:
-          # Injects the keystore password securely from GitHub Secrets.
-          # This password is used to access both the .pfx file and the Java keystore.
+          # Injects the keystore password securely from GitHub Secrets
+          # This password is used to access both the .pfx file and the Java keystore
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
         run: |
-          # Executes the PowerShell script with required parameters.
-          # Replace the values below with your actual configuration.
+          # Execute the PowerShell script with all required parameters
+          # Replace the placeholder values with your actual configuration
           .\Install-TeamCitySSLCert.ps1 `
             -GcsBucketName "your-gcs-bucket" `  # Name of the GCS bucket containing the certificate
-            -GcsCertObjectName "teamcity_cert.pfx" `  # Name of the certificate file in GCS
-            -TeamCityConfDir "C:\TeamCity\conf" `  # Path to TeamCity's configuration directory
+            -GcsCertObjectName "teamcity_cert.pfx" `  # Name of the certificate file in the bucket
+            -TeamCityConfDir "C:\TeamCity\conf" `  # Path to TeamCity's configuration directory (contains server.xml)
             -TeamCityCertDir "C:\TeamCity\Cert" `  # Local directory to store the downloaded certificate
-            -KeystorePassword $env:KEYSTORE_PASSWORD  # Password for the keystore and .pfx file
+            -KeystorePassword $env:KEYSTORE_PASSWORD  # Uses the injected secret as the keystore password
