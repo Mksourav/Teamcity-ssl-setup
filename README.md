@@ -1,9 +1,3 @@
-Here’s a **refined and enhanced version of your `README.md`** based on the updated PowerShell script that uses approved verbs and includes detailed comments. This version improves clarity, structure, and alignment with PowerShell best practices.
-
----
-
-### ✅ Updated `README.md`
-
 ```markdown
 # TeamCity SSL Certificate Automation
 
